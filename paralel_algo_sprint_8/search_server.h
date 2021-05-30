@@ -6,7 +6,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
-#include <execution>
+//#include <execution>
 #include "document.h"
 #include "string_processing.h"
 #include <cmath>
@@ -21,7 +21,7 @@ public:
 	explicit SearchServer(const StringContainer& stop_words);
 	explicit SearchServer(const std::string& stop_words_text);
 
-	void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
+    void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
 
 	template <typename DocumentPredicate>
 	std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentPredicate document_predicate) const;
@@ -29,17 +29,17 @@ public:
 	std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
-	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::parallel_policy, const std::string& raw_query, int document_id) const;
-	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::sequenced_policy, const std::string& raw_query, int document_id) const;
-	
+//    std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::parallel_policy, const std::string& raw_query, int document_id) const;
+//    std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::sequenced_policy, const std::string& raw_query, int document_id) const;
+
 	int GetDocumentCount() const;
 	std::set<int>::const_iterator begin() const;
 	std::set<int>::const_iterator end() const;
 	const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
 	
 	void RemoveDocument(int document_id);
-	void RemoveDocument(std::execution::parallel_policy, int document_id);
-	void RemoveDocument(std::execution::sequenced_policy, int document_id);
+//    void RemoveDocument(std::execution::parallel_policy, int document_id);
+//    void RemoveDocument(std::execution::sequenced_policy, int document_id);
 
 private:
 	struct DocumentData {
@@ -54,7 +54,7 @@ private:
 
 	bool IsStopWord(const std::string& word) const;
 	static bool IsValidWord(const std::string& word);
-	std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
+    std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
 
 	struct QueryWord {
 		std::string data;

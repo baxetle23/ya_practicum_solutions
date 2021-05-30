@@ -1,5 +1,6 @@
 #include "search_server.h"
 #include <cmath>
+#include <string_view>
 
 SearchServer::SearchServer(const std::string& stop_words_text)
 : SearchServer(SplitIntoWords(stop_words_text)){
@@ -64,24 +65,24 @@ void SearchServer::RemoveDocument(int document_id) {
 	}
 }
 
-void SearchServer::RemoveDocument(std::execution::parallel_policy, int document_id) {
-	if (document_ids_.count(document_id)) {
-		for_each(std::execution::par,
-			word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
-			[document_id](auto& pair) {
-				auto it = pair.second.find(document_id);
-				if (it != pair.second.end())
-					pair.second.erase(it);
-			});
-		documents_.erase(document_id);
-		document_ids_.erase(document_id);
-		id_freqs_word_.erase(document_id);
-	}
-} 
+//void SearchServer::RemoveDocument(std::execution::parallel_policy, int document_id) {
+//	if (document_ids_.count(document_id)) {
+//		for_each(std::execution::par,
+//			word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
+//			[document_id](auto& pair) {
+//				auto it = pair.second.find(document_id);
+//				if (it != pair.second.end())
+//					pair.second.erase(it);
+//			});
+//		documents_.erase(document_id);
+//		document_ids_.erase(document_id);
+//		id_freqs_word_.erase(document_id);
+//	}
+//}
 
-void SearchServer::RemoveDocument(std::execution::sequenced_policy, int document_id) {
-	RemoveDocument(document_id);
-}
+//void SearchServer::RemoveDocument(std::execution::sequenced_policy, int document_id) {
+//	RemoveDocument(document_id);
+//}
 
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
 	const auto query = ParseQuery(raw_query);
@@ -107,38 +108,38 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 	return {matched_words, documents_.at(document_id).status};
 }
 
-std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(std::execution::sequenced_policy, 
-	const std::string& raw_query, int document_id) const {
-	return MatchDocument(raw_query, document_id);
-}
+//std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(std::execution::sequenced_policy,
+//	const std::string& raw_query, int document_id) const {
+//	return MatchDocument(raw_query, document_id);
+//}
 
-std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(std::execution::parallel_policy, 
-	const std::string& raw_query, int document_id) const {
-	const auto query = ParseQuery(raw_query);
-// не имею понятия как упростить этот код - я даже отказываюсь верить в то что я его написал
-// 
-	std::vector<std::string> matched_words(query.plus_words.size());
-	
+//std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(std::execution::parallel_policy,
+//	const std::string& raw_query, int document_id) const {
+//	const auto query = ParseQuery(raw_query);
+//// не имею понятия как упростить этот код - я даже отказываюсь верить в то что я его написал
+////
+//	std::vector<std::string> matched_words(query.plus_words.size());
 
-	for (const std::string& word : query.plus_words) {
-		if (word_to_document_freqs_.count(word) == 0) {
-			continue;
-		}
-		if (word_to_document_freqs_.at(word).count(document_id)) {
-			matched_words.push_back(word);
-		}
-	}
-	for (const std::string& word : query.minus_words) {
-		if (word_to_document_freqs_.count(word) == 0) {
-			continue;
-		}
-		if (word_to_document_freqs_.at(word).count(document_id)) {
-			matched_words.clear();
-			break;
-		}
-	}
-	return {matched_words, documents_.at(document_id).status};
-}
+
+//	for (const std::string& word : query.plus_words) {
+//		if (word_to_document_freqs_.count(word) == 0) {
+//			continue;
+//		}
+//		if (word_to_document_freqs_.at(word).count(document_id)) {
+//			matched_words.push_back(word);
+//		}
+//	}
+//	for (const std::string& word : query.minus_words) {
+//		if (word_to_document_freqs_.count(word) == 0) {
+//			continue;
+//		}
+//		if (word_to_document_freqs_.at(word).count(document_id)) {
+//			matched_words.clear();
+//			break;
+//		}
+//	}
+//	return {matched_words, documents_.at(document_id).status};
+//}
 
 
 bool SearchServer::IsStopWord(const std::string& word) const {
@@ -153,7 +154,7 @@ bool SearchServer::IsValidWord(const std::string& word) {
 
 std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& text) const {
 	std::vector<std::string> words;
-	for (const std::string& word : SplitIntoWords(text)) {
+    for (const std::string& word : SplitIntoWords(text)) {
 		if (!IsValidWord(word)) {
 			throw std::invalid_argument("Word "s + word + " is invalid"s);
 		}
