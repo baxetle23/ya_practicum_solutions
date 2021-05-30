@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <execution>
 #include "document.h"
 #include "string_processing.h"
 #include <cmath>
@@ -32,7 +33,10 @@ public:
 	std::set<int>::const_iterator begin() const;
 	std::set<int>::const_iterator end() const;
 	const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+	
 	void RemoveDocument(int document_id);
+	void RemoveDocument(std::execution::parallel_policy, int document_id);
+	void RemoveDocument(std::execution::sequenced_policy, int document_id);
 
 private:
 	struct DocumentData {
