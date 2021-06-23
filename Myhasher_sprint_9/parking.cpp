@@ -77,17 +77,34 @@ public:
 
     // запарковать машину с указанным номером
     void Park(VehiclePlate car) {
-        // место для вашей реализации
+        if (now_parked_.count(car)) {
+			throw (ParkingException {});
+		}
+		else {
+			now_parked_[car] = Clock::now();
+		}
+
     }
 
     // забрать машину с указанным номером
     void Withdraw(const VehiclePlate& car) {
-        // место для вашей реализации
+        if (now_parked_.count(car)) {
+			complete_parks_[car] += Clock::now() - now_parked_.at(car);
+			now_parked_.erase(car);
+		}
+		else {
+			throw (ParkingException {});
+		}
     }
 
     // получить счёт за конкретный автомобиль
     int64_t GetCurrentBill(const VehiclePlate& car) const {
-        // место для вашей реализации
+		int64_t cost_park = 0;
+		if (now_parked_.count(car))
+			cost_park += chrono::duration_cast<chrono::seconds>(Clock::now() - now_parked_.at(car)).count() * cost_per_second_;
+		if (complete_parks_.count(car))
+			cost_park += chrono::duration_cast<chrono::seconds>(complete_parks_.at(car)).count() * cost_per_second_;
+		return (cost_park);
     }
 
     // завершить расчётный период
@@ -95,6 +112,16 @@ public:
     // остаться на парковке, но отсчёт времени для них начинается с нуля
     unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> EndPeriodAndGetBills() {
         // место для вашей реализации
+		unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> result;
+		for_each(now_parked_.begin(), now_parked_.end(), [&](auto& pair){
+			result[pair.first] = chrono::duration_cast<chrono::seconds>(Clock::now() - pair.second).count() * cost_per_second_;
+			pair.second = Clock::now();
+		});
+		for_each(complete_parks_.begin(), complete_parks_.end(), [&](auto& pair) {
+			result[pair.first] += chrono::duration_cast<chrono::seconds>(pair.second).count() * cost_per_second_;
+		});
+		complete_parks_.clear();
+		return result;
     }
 
     // не меняйте этот метод
@@ -106,7 +133,6 @@ public:
     auto& GetCompleteParks() const {
         return complete_parks_;
     }
-
 private:
     int cost_per_second_;
     unordered_map<VehiclePlate, TimePoint, VehiclePlateHasher> now_parked_;
