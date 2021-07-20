@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
 #include "svg.h" // ?????????? ??????? ?????????? ?????? ???? ??????????? ? ????? svg.h
-
+#include <assert.h>
 #include <cmath>
 
 using namespace std::literals;
@@ -33,7 +33,7 @@ public:
         outer_radius_(outer_radius),
         inner_radius_(inner_radius),
         num_rays_(num_rays){
-    } 
+    }
 private:
    svg::Point center_;
    double outer_radius_;
@@ -41,7 +41,7 @@ private:
    int num_rays_;
    svg::Color color_fill = "red"s;
    svg::Color color_stroke = "black"s;
-}; 
+};
 
 class Snowman : public svg::Drawable {
 public:
@@ -59,7 +59,7 @@ private:
    double radius_;
    svg::Color color_fill = "rgb(240,240,240)"s;
    svg::Color color_stroke = "black"s;
-}; 
+};
 
 class Triangle : public svg::Drawable {
 public:
@@ -76,7 +76,7 @@ public:
 
 private:
     svg::Point p1_, p2_, p3_;
-}; 
+};
 
 }
 
@@ -121,5 +121,4 @@ int main() {
     doc.Add(Text{base_text}.SetFillColor("red"s));
 
     doc.Render(cout);
-} 
-
+}

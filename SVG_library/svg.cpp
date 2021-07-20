@@ -10,6 +10,44 @@ void Object::Render(const RenderContext& context) const {
     context.out << std::endl;
 }
 
+
+// ---------------RGB--------------
+
+Rgb::Rgb(size_t R, size_t G, size_t B) :
+    red(R),
+    green(G),
+    blue(B) {
+}
+
+Rgba::Rgba(size_t R, size_t G, size_t B, double opacity) :
+    red(R),
+    green(G),
+    blue(B),
+    opacity(opacity){
+}
+
+void PrintColor::operator()(std::monostate) const{
+    out << "none"s;
+}
+void PrintColor::operator()(const std::string& str) const {
+    out << str;
+}
+void PrintColor::operator()(Rgb rgb) const {
+    out << "rgb("s << std::to_string(rgb.red)
+        << ","s << std::to_string(rgb.green)
+        << ","s << std::to_string(rgb.blue) << ")"s;
+}
+void PrintColor::operator()(Rgba rgba)  const{
+    out << "rgba("s << std::to_string(rgba.red)
+        << ","s << std::to_string(rgba.green)
+        << ","s << std::to_string(rgba.blue)
+        << ","s << rgba.opacity << ")"s;
+}
+
+// -----------PathProps-------------
+
+
+
 // ---------- Circle ------------------
 
 Circle& Circle::SetCenter(Point center)  {
@@ -153,5 +191,10 @@ std::ostream& operator<<(std::ostream& stm, const svg::StrokeLineJoin& clr) {
         case svg::StrokeLineJoin::MITER_CLIP : {stm << "miter-clip"sv; break;}
         case svg::StrokeLineJoin::ROUND      : {stm << "round"sv; break;}
     }
+    return stm;
+}
+
+std::ostream& operator<<(std::ostream& stm, const svg::Color& color) {
+    std::visit(svg::PrintColor{stm}, color);
     return stm;
 }

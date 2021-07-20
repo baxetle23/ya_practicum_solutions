@@ -7,12 +7,38 @@
 #include <vector>
 #include <algorithm>
 #include <optional>
+#include <variant>
 
 namespace svg {
 
-using Color = std::string;
+struct Rgb {
+    Rgb() = default;
+    Rgb(size_t R, size_t G, size_t B);
+    uint8_t red = 0;
+    uint8_t green = 0;
+    uint8_t blue = 0;
+};
 
-inline const Color NoneColor{"none"};
+struct Rgba {
+    Rgba() = default;
+    Rgba(size_t R, size_t G, size_t B, double opacity);
+    uint8_t red = 0;
+    uint8_t green = 0;
+    uint8_t blue = 0;
+    double opacity = 1.;
+};
+
+struct PrintColor {
+    std::ostream& out;
+    void operator()(std::monostate) const;
+    void operator()(const std::string& str) const;
+    void operator()(Rgb rgb) const;
+    void operator()(Rgba rgba)  const;
+};
+
+using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
+
+inline const Color NoneColor{std::monostate()};
 
 enum StrokeLineCap {
     BUTT,
@@ -20,19 +46,18 @@ enum StrokeLineCap {
     SQUARE
 };
 
-
-
 enum class StrokeLineJoin {
     ARCS,
     BEVEL,
     MITER,
     MITER_CLIP,
-    ROUND   
+    ROUND
 };
 } // namespace svg
 
 std::ostream& operator<<(std::ostream& stm, const svg::StrokeLineJoin& clr);
-std::ostream& operator<<( std::ostream& stm, const svg::StrokeLineCap& clr);
+std::ostream& operator<<(std::ostream& stm, const svg::StrokeLineCap& clr);
+std::ostream& operator<<(std::ostream& stm, const svg::Color& color);
 
 namespace svg {
 struct Point {
@@ -68,8 +93,6 @@ public:
         stroke_linejoin_ = std::move(line_join);
         return AsOwner();
     }
-    
-
 protected:
     ~PathProps() = default;
     void RenderAttrs(std::ostream& out) const {
@@ -87,14 +110,13 @@ protected:
             out << " stroke-linecap=\""sv << *stroke_linecap_ << "\""sv;
         }
         if (stroke_linejoin_) {
-            out << " stroke_linejoin=\""sv << *stroke_linejoin_ << "\""sv;
+            out << " stroke-linejoin=\""sv << *stroke_linejoin_ << "\""sv;
         }
     }
 private:
     Owner& AsOwner() {
         return static_cast<Owner&>(*this);
     }
-
     std::optional<Color> fill_color_;
     std::optional<Color> stroke_color_;
     std::optional<double> stroke_width_;
@@ -179,7 +201,7 @@ public:
     Text& SetPosition(Point pos);
     Text& SetOffset(Point offset);
     Text& SetFontSize(uint32_t size);
-    Text& SetFontFamily(std::string font_family);   
+    Text& SetFontFamily(std::string font_family);
     Text& SetFontWeight(std::string font_weight);
     Text& SetData(std::string data);
     ~Text() = default;
